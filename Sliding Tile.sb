@@ -1,0 +1,98 @@
+seed = 3
+NumbeOfTiles = seed*seed
+tileWidth = GraphicsWindow.Width/3
+tileHeight = GraphicsWindow.Height/3
+recSize = 150
+GraphicsWindow.MouseDown = OnMouseMove
+For i = 0 To NumbeOfTiles-1
+  If i<> 0 Then
+    tile[i] = Shapes.AddText(i)
+    rec[i] = Shapes.AddRectangle(recSize,recSize)
+    Shapes.Zoom(tile[i],15, 15)
+  Else
+    rec[i] = Shapes.AddRectangle(recSize,recSize)
+  EndIf
+  Shapes.SetOpacity(rec[i],10)
+  tile["pos"][i] = i
+EndFor
+Sub RandomizePos
+  For r = 0 To NumbeOfTiles-1 
+    randomI = Math.GetRandomNumber(r-1)
+    temp = tile["pos"][r]
+    tile["pos"][r] = tile["pos"][randomI]
+    tile["pos"][randomI] =  temp
+  EndFor
+  For i = 0 To NumbeOfTiles-1
+    Pos["tile"][tile["pos"][i]]=i
+    
+  EndFor
+  For i = 0 To NumbeOfTiles-1
+    TextWindow.WriteLine(Pos["tile"][i])
+  EndFor
+EndSub
+'Manin..........................................
+For i = 0 To NumbeOfTiles-1
+  PlaceRec()
+EndFor
+
+RandomizePos()
+For i = 0 To NumbeOfTiles-1
+  PlaceTiles()
+EndFor
+'...........................................................
+Sub PlaceRec
+  x =  Math.Remainder(tile["pos"][i],seed)*tileWidth+80
+  y = Math.Floor(tile["pos"][i]/seed)*(tileHeight+25)+100
+  Shapes.Move(rec[i] ,x-70,y-60)
+EndSub
+
+Sub PlaceTiles
+  x = Math.Remainder(tile["pos"][i],seed)*tileWidth+80
+  y = Math.Floor(tile["pos"][i]/seed)*(tileHeight+25)+100
+  
+  Shapes.Move(tile[i],x,y)
+  TextWindow.WriteLine("x "+x+" y "+y)
+EndSub
+
+Sub checkSelected
+  For i = 0 To  NumbeOfTiles-1
+    If ((GraphicsWindow.MouseX>Shapes.GetLeft(rec[i])) And (GraphicsWindow.MouseX-Shapes.GetLeft(rec[i])<recSize)) Then
+      If ((GraphicsWindow.MouseY>Shapes.GetTop(rec[i])) And (GraphicsWindow.MouseY-Shapes.GetTop(rec[i])<recSize)) Then
+        rec["selected"] = i
+        TextWindow.WriteLine(i+"th rectangle is selected")
+        TextWindow.WriteLine("previous tile is "+Pos["tile"][i-1])
+        Shapes.SetOpacity(rec[i],50)
+      EndIf
+    EndIf
+  EndFor
+  checkSwapable()
+EndSub
+Sub OnMouseMove
+  checkSelected()
+EndSub
+
+Sub SwapTiles '' takes selected and i
+  temp = tile["pos"][selected]
+  tile["pos"][selected] = tile["pos"][swaping]
+  i = selected
+  PlaceTiles()
+  tile["pos"][swaping] = temp
+  i = swaping
+  PlaceTiles()
+  For i = 0 To NumbeOfTiles-1
+    Pos["tile"][tile["pos"][i]]=i
+    
+  EndFor
+EndSub
+Sub checkSwapable
+  If (Pos["tile"][rec["selected"]-3]=0) Or (Pos["tile"][rec["selected"]+3]=0) Then
+    swaping = Pos["tile"][tile["pos"][0]]
+    selected = Pos["tile"][rec["selected"]]
+    SwapTiles()
+  ElseIf (Pos["tile"][rec["selected"]-1]=0) Or (Pos["tile"][rec["selected"]+1]=0) then
+    swaping = Pos["tile"][tile["pos"][0]]
+    selected = Pos["tile"][rec["selected"]]
+    SwapTiles()
+  EndIf
+EndSub
+
