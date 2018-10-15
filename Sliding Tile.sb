@@ -1,20 +1,16 @@
+
 seed = 3
 NumbeOfTiles = seed*seed
 tileWidth = GraphicsWindow.Width/3
 tileHeight = GraphicsWindow.Height/3
 recSize = 150
 GraphicsWindow.MouseDown = OnMouseMove
-For i = 0 To NumbeOfTiles-1
-  If i<> 0 Then
-    tile[i] = Shapes.AddText(i)
-    rec[i] = Shapes.AddRectangle(recSize,recSize)
-    Shapes.Zoom(tile[i],15, 15)
-  Else
-    rec[i] = Shapes.AddRectangle(recSize,recSize)
-  EndIf
-  Shapes.SetOpacity(rec[i],10)
-  tile["pos"][i] = i
-EndFor
+GraphicsWindow.KeyDown = OnKeyDown
+Sub OnKeyDown
+  GraphicsWindow.Clear()
+  main()
+EndSub
+
 Sub RandomizePos
   For r = 0 To NumbeOfTiles-1 
     randomI = Math.GetRandomNumber(r-1)
@@ -31,14 +27,32 @@ Sub RandomizePos
   EndFor
 EndSub
 'Manin..........................................
-For i = 0 To NumbeOfTiles-1
-  PlaceRec()
-EndFor
+main()
+Sub main
+  For i = 0 To NumbeOfTiles-1
+    If i<> 0 Then
+      tile[i] = Shapes.AddText(i)
+      rec[i] = Shapes.AddRectangle(recSize,recSize)
+      Shapes.Zoom(tile[i],15, 15)
+    Else
+      rec[i] = Shapes.AddRectangle(recSize,recSize)
+    EndIf
+    Shapes.SetOpacity(rec[i],10)
+    tile["pos"][i] = i
+  EndFor
+  For i = 0 To NumbeOfTiles-1
+    PlaceRec()
+  EndFor
+  RandomizePos()
+  For i = 0 To NumbeOfTiles-1
+    PlaceTiles()
+  EndFor
+  CheckSolvability()
+  MakeSolvable()
+  CheckSolvability()
+  
+EndSub
 
-RandomizePos()
-For i = 0 To NumbeOfTiles-1
-  PlaceTiles()
-EndFor
 '...........................................................
 Sub PlaceRec
   x =  Math.Remainder(tile["pos"][i],seed)*tileWidth+80
@@ -67,6 +81,7 @@ Sub checkSelected
   EndFor
   checkSwapable()
 EndSub
+
 Sub OnMouseMove
   checkSelected()
 EndSub
@@ -84,15 +99,76 @@ Sub SwapTiles '' takes selected and i
     
   EndFor
 EndSub
+
 Sub checkSwapable
-  If (Pos["tile"][rec["selected"]-3]=0) Or (Pos["tile"][rec["selected"]+3]=0) Then
+  If (Pos["tile"][rec["selected"]-Math.SquareRoot(NumbeOfTiles)]=0) Or (Pos["tile"][rec["selected"]+Math.SquareRoot(NumbeOfTiles)]=0) Then
     swaping = Pos["tile"][tile["pos"][0]]
     selected = Pos["tile"][rec["selected"]]
     SwapTiles()
   ElseIf (Pos["tile"][rec["selected"]-1]=0) Or (Pos["tile"][rec["selected"]+1]=0) then
+    SwapSideBySide()
+  EndIf
+  CheckIfSolved()
+EndSub
+
+Sub SwapSideBySide
+  If (rec["selected"] = 2) And (tile["pos"][0]=3) then
+  ElseIf (rec["selected"] = 3) And (tile["pos"][0]=2) then
+  ElseIf (rec["selected"] = 6) And (tile["pos"][0]=5) then
+  ElseIf (rec["selected"] = 5) And (tile["pos"][0]=6) then
+  Else
     swaping = Pos["tile"][tile["pos"][0]]
     selected = Pos["tile"][rec["selected"]]
     SwapTiles()
   EndIf
+EndSub
+
+Sub CheckSolvability
+  inversionCount = 0
+  For i = 0 To NumbeOfTiles-1 
+    TextWindow.WriteLine( "pos " +i+" tile is "+Pos["tile"][i])
+    If (Pos["tile"][i]<>0) Then
+      for r = i+1 To NumbeOfTiles-1
+        TextWindow.WriteLine( "pos " +r+"tile is "+Pos["tile"][r])
+        If (Pos["tile"][i]>Pos["tile"][r]) And (Pos["tile"][r]<>0 ) Then
+          inversionCount = inversionCount+1
+          
+          TextWindow.WriteLine( "number of inversion is "+inversionCount)
+        EndIf
+      EndFor
+    EndIf
+  EndFor
+  TextWindow.WriteLine("number of inversion is "+inversionCount)
+EndSub
+Sub MakeSolvable 
+  If Math.Remainder(inversionCount,2)<> 0 Then
+    If Pos["tile"][0] = 0 Then
+      swaping = Pos["tile"][1]
+      selected = Pos["tile"][2]
+      
+    ElseIf  Pos["tile"][1] = 0 then
+      swaping = Pos["tile"][0]
+      selected = Pos["tile"][2]
+    Else
+      swaping = Pos["tile"][0]
+      selected = Pos["tile"][1]
+    EndIf
+    SwapTiles()
+  EndIf
+EndSub
+Sub CheckIfSolved
+  solved = 0
+  For i = 0 To NumbeOfTiles-1
+    if Pos["tile"][i] = i+1 Then
+      solved = solved+1
+    EndIf
+  EndFor
+  TextWindow.WriteLine("number of solved tile is "+solved)
+  If solved = NumbeOfTiles-1 Then
+    GraphicsWindow.Clear()
+    main()
+    
+  EndIf
+  
 EndSub
 
