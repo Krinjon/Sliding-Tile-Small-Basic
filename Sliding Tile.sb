@@ -1,4 +1,3 @@
-
 seed = 3
 NumbeOfTiles = seed*seed
 tileWidth = GraphicsWindow.Width/3
@@ -140,6 +139,7 @@ Sub CheckSolvability
   EndFor
   TextWindow.WriteLine("number of inversion is "+inversionCount)
 EndSub
+
 Sub MakeSolvable 
   If Math.Remainder(inversionCount,2)<> 0 Then
     If Pos["tile"][0] = 0 Then
@@ -156,6 +156,7 @@ Sub MakeSolvable
     SwapTiles()
   EndIf
 EndSub
+
 Sub CheckIfSolved
   solved = 0
   For i = 0 To NumbeOfTiles-1
@@ -167,8 +168,6 @@ Sub CheckIfSolved
   If solved = NumbeOfTiles-1 Then
     GraphicsWindow.Clear()
     main()
-    
   EndIf
-  
 EndSub
 
